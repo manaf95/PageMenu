@@ -52,6 +52,7 @@ open class CAPSPageMenu: UIViewController {
     var currentOrientationIsPortrait : Bool = true
     var pageIndexForOrientationChange : Int = 0
     var didLayoutSubviewsAfterRotation : Bool = false
+    var didLayoutAfterLoad : Bool = false
     var didScrollAlready : Bool = false
     
     var lastControllerScrollViewContentOffset : CGFloat = 0.0
@@ -238,70 +239,70 @@ extension CAPSPageMenu {
         // Configure controller scroll view content size
         controllerScrollView.contentSize = CGSize(width: self.view.frame.width * CGFloat(controllerArray.count), height: self.view.frame.height - configuration.menuHeight)
         
-        //        let oldCurrentOrientationIsPortrait : Bool = currentOrientationIsPortrait
-        //        currentOrientationIsPortrait = UIDevice.current.orientation.isPortrait
-        //
-        //        if (oldCurrentOrientationIsPortrait && UIDevice.current.orientation.isLandscape) || (!oldCurrentOrientationIsPortrait && UIDevice.current.orientation.isPortrait) {
-        didLayoutSubviewsAfterRotation = true
+        let oldCurrentOrientationIsPortrait : Bool = currentOrientationIsPortrait
+        currentOrientationIsPortrait = UIDevice.current.orientation.isPortrait
         
-        //Resize menu items if using as segmented control
-        if configuration.useMenuLikeSegmentedControl {
-            menuScrollView.contentSize = CGSize(width: self.view.frame.width, height: configuration.menuHeight)
-            
-            // Resize selectionIndicator bar
-            let selectionIndicatorX : CGFloat = CGFloat(currentPageIndex) * (self.view.frame.width / CGFloat(self.controllerArray.count))
-            let selectionIndicatorWidth : CGFloat = self.view.frame.width / CGFloat(self.controllerArray.count)
-            selectionIndicatorView.frame =  CGRect(x: selectionIndicatorX, y: self.selectionIndicatorView.frame.origin.y, width: selectionIndicatorWidth, height: self.selectionIndicatorView.frame.height)
-            
-            // Resize menu items
-            var index : Int = 0
-            
-            for item : MenuItemView in menuItems as [MenuItemView] {
-                item.frame = CGRect(x: self.view.frame.width / CGFloat(controllerArray.count) * CGFloat(index), y: 0.0, width: self.view.frame.width / CGFloat(controllerArray.count), height: configuration.menuHeight)
-                item.titleLabel!.frame = CGRect(x: 0.0, y: 0.0, width: self.view.frame.width / CGFloat(controllerArray.count), height: configuration.menuHeight)
-                item.menuItemSeparator!.frame = CGRect(x: item.frame.width - (configuration.menuItemSeparatorWidth / 2), y: item.menuItemSeparator!.frame.origin.y, width: item.menuItemSeparator!.frame.width, height: item.menuItemSeparator!.frame.height)
+        if (oldCurrentOrientationIsPortrait && UIDevice.current.orientation.isLandscape) || (!oldCurrentOrientationIsPortrait && UIDevice.current.orientation.isPortrait) || !self.didLayoutAfterLoad {
+            didLayoutSubviewsAfterRotation = true
+            didLayoutAfterLoad = true
+            //Resize menu items if using as segmented control
+            if configuration.useMenuLikeSegmentedControl {
+                menuScrollView.contentSize = CGSize(width: self.view.frame.width, height: configuration.menuHeight)
                 
-                index += 1
-            }
-        } else if configuration.centerMenuItems {
-            startingMenuMargin = ((self.view.frame.width - ((CGFloat(controllerArray.count) * configuration.menuItemWidth) + (CGFloat(controllerArray.count - 1) * configuration.menuMargin))) / 2.0) -  configuration.menuMargin
-            
-            if startingMenuMargin < 0.0 {
-                startingMenuMargin = 0.0
-            }
-            
-            let selectionIndicatorX : CGFloat = self.configuration.menuItemWidth * CGFloat(currentPageIndex) + self.configuration.menuMargin * CGFloat(currentPageIndex + 1) + self.startingMenuMargin
-            selectionIndicatorView.frame =  CGRect(x: selectionIndicatorX, y: self.selectionIndicatorView.frame.origin.y, width: self.selectionIndicatorView.frame.width, height: self.selectionIndicatorView.frame.height)
-            
-            // Recalculate frame for menu items if centered
-            var index : Int = 0
-            
-            for item : MenuItemView in menuItems as [MenuItemView] {
-                if index == 0 {
-                    item.frame = CGRect(x: startingMenuMargin + configuration.menuMargin, y: 0.0, width: configuration.menuItemWidth, height: configuration.menuHeight)
-                } else {
-                    item.frame = CGRect(x: configuration.menuItemWidth * CGFloat(index) + configuration.menuMargin * CGFloat(index + 1) + startingMenuMargin, y: 0.0, width: configuration.menuItemWidth, height: configuration.menuHeight)
+                // Resize selectionIndicator bar
+                let selectionIndicatorX : CGFloat = CGFloat(currentPageIndex) * (self.view.frame.width / CGFloat(self.controllerArray.count))
+                let selectionIndicatorWidth : CGFloat = self.view.frame.width / CGFloat(self.controllerArray.count)
+                selectionIndicatorView.frame =  CGRect(x: selectionIndicatorX, y: self.selectionIndicatorView.frame.origin.y, width: selectionIndicatorWidth, height: self.selectionIndicatorView.frame.height)
+                
+                // Resize menu items
+                var index : Int = 0
+                
+                for item : MenuItemView in menuItems as [MenuItemView] {
+                    item.frame = CGRect(x: self.view.frame.width / CGFloat(controllerArray.count) * CGFloat(index), y: 0.0, width: self.view.frame.width / CGFloat(controllerArray.count), height: configuration.menuHeight)
+                    item.titleLabel!.frame = CGRect(x: 0.0, y: 0.0, width: self.view.frame.width / CGFloat(controllerArray.count), height: configuration.menuHeight)
+                    item.menuItemSeparator!.frame = CGRect(x: item.frame.width - (configuration.menuItemSeparatorWidth / 2), y: item.menuItemSeparator!.frame.origin.y, width: item.menuItemSeparator!.frame.width, height: item.menuItemSeparator!.frame.height)
+                    
+                    index += 1
+                }
+            } else if configuration.centerMenuItems {
+                startingMenuMargin = ((self.view.frame.width - ((CGFloat(controllerArray.count) * configuration.menuItemWidth) + (CGFloat(controllerArray.count - 1) * configuration.menuMargin))) / 2.0) -  configuration.menuMargin
+                
+                if startingMenuMargin < 0.0 {
+                    startingMenuMargin = 0.0
                 }
                 
-                index += 1
+                let selectionIndicatorX : CGFloat = self.configuration.menuItemWidth * CGFloat(currentPageIndex) + self.configuration.menuMargin * CGFloat(currentPageIndex + 1) + self.startingMenuMargin
+                selectionIndicatorView.frame =  CGRect(x: selectionIndicatorX, y: self.selectionIndicatorView.frame.origin.y, width: self.selectionIndicatorView.frame.width, height: self.selectionIndicatorView.frame.height)
+                
+                // Recalculate frame for menu items if centered
+                var index : Int = 0
+                
+                for item : MenuItemView in menuItems as [MenuItemView] {
+                    if index == 0 {
+                        item.frame = CGRect(x: startingMenuMargin + configuration.menuMargin, y: 0.0, width: configuration.menuItemWidth, height: configuration.menuHeight)
+                    } else {
+                        item.frame = CGRect(x: configuration.menuItemWidth * CGFloat(index) + configuration.menuMargin * CGFloat(index + 1) + startingMenuMargin, y: 0.0, width: configuration.menuItemWidth, height: configuration.menuHeight)
+                    }
+                    
+                    index += 1
+                }
+            }
+            
+            for view in controllerScrollView.subviews {
+                view.frame = CGRect(x: self.view.frame.width * CGFloat(self.currentPageIndex), y: configuration.menuHeight, width: controllerScrollView.frame.width, height: self.view.frame.height - configuration.menuHeight)
+            }
+            
+            let xOffset : CGFloat = CGFloat(self.currentPageIndex) * controllerScrollView.frame.width
+            controllerScrollView.setContentOffset(CGPoint(x: xOffset, y: controllerScrollView.contentOffset.y), animated: false)
+            
+            let ratio : CGFloat = (menuScrollView.contentSize.width - self.view.frame.width) / (controllerScrollView.contentSize.width - self.view.frame.width)
+            
+            if menuScrollView.contentSize.width > self.view.frame.width {
+                var offset : CGPoint = menuScrollView.contentOffset
+                offset.x = controllerScrollView.contentOffset.x * ratio
+                menuScrollView.setContentOffset(offset, animated: false)
             }
         }
-        
-        for view in controllerScrollView.subviews {
-            view.frame = CGRect(x: self.view.frame.width * CGFloat(self.currentPageIndex), y: configuration.menuHeight, width: controllerScrollView.frame.width, height: self.view.frame.height - configuration.menuHeight)
-        }
-        
-        let xOffset : CGFloat = CGFloat(self.currentPageIndex) * controllerScrollView.frame.width
-        controllerScrollView.setContentOffset(CGPoint(x: xOffset, y: controllerScrollView.contentOffset.y), animated: false)
-        
-        let ratio : CGFloat = (menuScrollView.contentSize.width - self.view.frame.width) / (controllerScrollView.contentSize.width - self.view.frame.width)
-        
-        if menuScrollView.contentSize.width > self.view.frame.width {
-            var offset : CGPoint = menuScrollView.contentOffset
-            offset.x = controllerScrollView.contentOffset.x * ratio
-            menuScrollView.setContentOffset(offset, animated: false)
-        }
-        //        }
         
         // Hsoi 2015-02-05 - Running on iOS 7.1 complained: "'NSInternalInconsistencyException', reason: 'Auto Layout
         // still required after sending -viewDidLayoutSubviews to the view controller. ViewController's implementation
